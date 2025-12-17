@@ -10,7 +10,7 @@ class SabyContactsPage:
 
     def __init__(self, driver):
         self.driver = driver
-        self.wait = WebDriverWait(driver, 10)
+        self.wait = WebDriverWait(driver, 15)
 
     def open(self):
         self.driver.get(self.URL)
@@ -20,3 +20,7 @@ class SabyContactsPage:
 
     def click_tensor_banner(self):
         self.wait.until(EC.element_to_be_clickable(self.TENSOR_BANNER)).click()
+
+    def switch_to_new_tab(self):
+        self.wait.until(lambda d: len(d.window_handles) > 1)
+        self.driver.switch_to.window(self.driver.window_handles[-1])
