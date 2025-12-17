@@ -1,11 +1,13 @@
 from pages.saby_main_page import SabyMainPage
 from pages.saby_contacts_page import SabyContactsPage
 from pages.tensor_main_page import TensorMainPage
+from pages.tensor_about_page import TensorAboutPage
 
 def test_saby_to_tensor(driver):
     saby_main = SabyMainPage(driver)
     saby_contacts = SabyContactsPage(driver)
     tensor = TensorMainPage(driver)
+    about = TensorAboutPage(driver)
 
     print("STEP 1: open saby main page")
     saby_main.open()
@@ -27,3 +29,6 @@ def test_saby_to_tensor(driver):
     print("STEP 6: open About page")
     tensor.open_about_page()
     assert "/about" in driver.current_url
+
+    print("STEP 7: check images size in 'Work' block")
+    about.check_images_have_same_size()

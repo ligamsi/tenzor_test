@@ -4,7 +4,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 class TensorMainPage:
     POWER_BLOCK = (By.XPATH, "//*[contains(text(),'Сила в людях')]")
-    MORE_DETAILS = (By.XPATH, "//a[contains(text(),'Подробнее')]")
+    MORE_DETAILS = (By.XPATH, "//a[contains(@href,'/about')]")
 
     def __init__(self, driver):
         self.driver = driver
@@ -19,10 +19,12 @@ class TensorMainPage:
         self.wait.until(
             EC.visibility_of_element_located(self.POWER_BLOCK)
         )
-        return True
 
-    def open_about(self):
-        more = self.wait.until(
-            EC.element_to_be_clickable(self.MORE_DETAILS)
+    def open_about_page(self):
+        about = self.wait.until(EC.element_to_be_clickable(self.MORE_DETAILS))
+        self.driver.execute_script(
+            "arguments[0].scrollIntoView({block:'center'});",
+            about
         )
-        more.click()
+        about.click()
+        self.wait.until(EC.url_contains("/about"))
