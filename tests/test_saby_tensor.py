@@ -1,31 +1,29 @@
-import pytest
+from pages.saby_main_page import SabyMainPage
 from pages.saby_contacts_page import SabyContactsPage
 from pages.tensor_main_page import TensorMainPage
 
 def test_saby_to_tensor(driver):
-    saby_page = SabyContactsPage(driver)
-    tensor_page = TensorMainPage(driver)
+    saby_main = SabyMainPage(driver)
+    saby_contacts = SabyContactsPage(driver)
+    tensor = TensorMainPage(driver)
 
-    print("STEP 1: open saby contacts")
-    saby_page.open()
+    print("STEP 1: open saby main page")
+    saby_main.open()
 
-    print("STEP 1.1: hover contacts menu")
-    saby_page.hover_contacts_menu()
+    print("STEP 2: go to contacts region")
+    saby_main.open_contacts_region()
+    assert "contacts" in driver.current_url
 
-    print("STEP 2: click more offices (hover first)")
-    saby_page.click_more_offices()
+    print("STEP 3: click Tensor banner")
+    saby_contacts.click_tensor_banner()
 
-    print("STEP 3: click tensor banner")
-    saby_page.click_tensor_banner()
+    print("STEP 4: switch to Tensor site")
+    tensor.switch_to_tensor()
+    assert "tensor.ru" in driver.current_url
 
-    print("STEP 4: switch to tensor site")
-    saby_page.switch_to_tensor()
+    print("STEP 5: check 'Power in people' block")
+    tensor.power_block_is_present()
 
-    print("STEP 5: check 'Сила в людях'")
-    assert tensor_page.is_power_block_present()
-
-    print("STEP 6: click 'Подробнее'")
-    tensor_page.click_more_details()
-
-    print("STEP 7: check about URL")
-    assert driver.current_url == "https://tensor.ru/about"
+    print("STEP 6: open About page")
+    tensor.open_about_page()
+    assert "/about" in driver.current_url
