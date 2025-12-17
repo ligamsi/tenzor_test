@@ -9,6 +9,9 @@ def test_saby_to_tensor(driver):
     print("STEP 1: open saby contacts")
     saby_page.open()
 
+    print("STEP 1.1: hover contacts menu")
+    saby_page.hover_contacts_menu()
+
     print("STEP 2: click more offices (hover first)")
     saby_page.click_more_offices()
 
