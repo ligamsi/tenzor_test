@@ -22,15 +22,9 @@ class TensorAboutPage:
         self.driver.execute_script(
             "arguments[0].scrollIntoView({block: 'center'});", header
         )
-
         images = self.wait.until(
             EC.presence_of_all_elements_located(self.WORK_IMAGES)
         )
-
         assert len(images) > 1, "В блоке 'Работаем' не найдено изображений"
-
         sizes = [(img.size["width"], img.size["height"]) for img in images]
-
-        assert len(set(sizes)) == 1, (
-            f"Размеры изображений отличаются: {set(sizes)}"
-        )
+        assert len(set(sizes)) == 1, (f"Размеры изображений отличаются: {set(sizes)}")
