@@ -7,7 +7,7 @@ def test_saby_to_tensor(driver):
 
     saby_page.click_more_offices()
     saby_page.click_tensor_banner()
-    saby_page.switch_to_new_tab()
+    saby_page.switch_to_tensor()
 
     assert "tensor.ru" in driver.current_url
 

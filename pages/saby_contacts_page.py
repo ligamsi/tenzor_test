@@ -10,7 +10,7 @@ class SabyContactsPage:
 
     def __init__(self, driver):
         self.driver = driver
-        self.wait = WebDriverWait(driver, 15)
+        self.wait = WebDriverWait(driver, 20)
 
     def open(self):
         self.driver.get(self.URL)
@@ -19,8 +19,11 @@ class SabyContactsPage:
         self.wait.until(EC.element_to_be_clickable(self.MORE_OFFICES_BUTTON)).click()
 
     def click_tensor_banner(self):
-        self.wait.until(EC.element_to_be_clickable(self.TENSOR_BANNER)).click()
+        banner = self.wait.until(EC.presence_of_element_located(self.TENSOR_BANNER))
+        self.driver.execute_script("arguments[0].scrollIntoView(true);", banner)
+        banner.click()
 
-    def switch_to_new_tab(self):
-        self.wait.until(lambda d: len(d.window_handles) > 1)
-        self.driver.switch_to.window(self.driver.window_handles[-1])
+    def switch_to_tensor(self):
+        self.wait.until(lambda d: "tensor.ru" in d.current_url or len(d.window_handles) > 1)
+        if len(self.driver.window_handles) > 1:
+            self.driver.switch_to.window(self.driver.window_handles[-1])
