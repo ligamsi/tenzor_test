@@ -14,12 +14,17 @@ def test_saby_to_tensor(driver):
 
     print("STEP 3: check default region and partners")
     saby_contacts.region_should_be("Республика Башкортостан")
-    saby_contacts.partners_list_should_not_be_empty()
+    saby_contacts.partners_should_be_present()
 
-    '''print("STEP 4: change region to Kamchatka")
-    contacts.change_region("Камчатский край")
+    old_partners = saby_contacts.get_partners_names()
+
+    print("STEP 4: change region to Камчатский край")
+    saby_contacts.change_region("Камчатский край")
 
     print("STEP 5: check region, partners, url and title")
-    contacts.region_should_be("Камчатский край")
-    contacts.partners_list_should_be_changed()
-    contacts.url_and_title_should_contain("Камчатский край")'''
+    saby_contacts.region_should_be("Камчатский край")
+
+    new_partners = saby_contacts.get_partners_names()
+    assert old_partners != new_partners, "Список партнёров не изменился после смены региона"
+
+    saby_contacts.check_url_and_title_contains_region("Камчатский")
