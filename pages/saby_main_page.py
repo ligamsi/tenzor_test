@@ -6,6 +6,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 class SabyMainPage:
     CONTACTS_MENU = (By.XPATH, "//span[text()='Контакты']")
     MORE_OFFICES = (By.XPATH, "//span[contains(text(),'Еще')]")
+    FOOTER_DOWNLOAD = (By.LINK_TEXT, "Скачать локальные версии")
 
     def __init__(self, driver):
         self.driver = driver
@@ -31,3 +32,8 @@ class SabyMainPage:
                 (By.CSS_SELECTOR, "div.sbisru-Contacts-List__item")
             )
         )
+
+    def open_download_page(self):
+        footer_link = self.wait.until(EC.presence_of_element_located(self.FOOTER_DOWNLOAD))
+        self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", footer_link)
+        self.wait.until(EC.element_to_be_clickable(self.FOOTER_DOWNLOAD)).click()
