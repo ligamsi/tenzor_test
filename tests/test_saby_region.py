@@ -1,30 +1,45 @@
+import pytest
 from pages.saby_main_page import SabyMainPage
 from pages.saby_contacts_page import SabyContactsPage
 
-def test_saby_to_tensor(driver):
+
+@pytest.mark.selenium
+def test_change_region_and_check_partners(driver):
+    """
+    Сценарий:
+    1. Переход Saby -> Контакты.
+    2. Проверка нашего региона и наличия партнеров.
+    3. Выбор нового региона (Камчатский край).
+    4. Проверка партнеров, url и title.
+    """
+    # Данные для теста
+    initial_region = "Республика Башкортостан"
+    target_region = "Камчатский край"
+    target_url_part = "41-kamchatskij-kraj"
+
     saby_main = SabyMainPage(driver)
     saby_contacts = SabyContactsPage(driver)
-
-    print("STEP 1: open saby main page")
+    
+    # 1. Открываем контакты
     saby_main.open()
-
-    print("STEP 2: go to contacts region")
     saby_main.open_contacts_region()
-    assert "contacts" in driver.current_url
 
-    print("STEP 3: check default region and partners")
-    saby_contacts.region_should_be("Республика Башкортостан")
-    saby_contacts.partners_should_be_present()
+    # 2. Проверяем текущий регион и список партнеров
+    current_reg = saby_contacts.get_current_region()
+    assert current_reg == initial_region, f"Должен быть {initial_region}, а не {current_reg}"
+    
+    partners_before = saby_contacts.get_partners_list()
+    assert len(partners_before) > 0, "Список партнеров пуст"
 
-    old_partners = saby_contacts.get_partners_names()
+    # 3. Меняем регион
+    saby_contacts.open_region_selector()
+    saby_contacts.select_region(target_region)
+    
+    # 4. Ждем обновления и проверяем результат
+    saby_contacts.wait_region_changed_to(target_region)
+    partners_after = saby_contacts.get_partners_list()
 
-    print("STEP 4: change region to Камчатский край")
-    saby_contacts.change_region("Камчатский край")
-
-    print("STEP 5: check region, partners, url and title")
-    saby_contacts.region_should_be("Камчатский край")
-
-    new_partners = saby_contacts.get_partners_names()
-    assert old_partners != new_partners, "Список партнёров не изменился после смены региона"
-
-    saby_contacts.check_url_and_title_contains_region("Камчатский")
+    # Финальные проверки
+    assert partners_before != partners_after, "Список партнеров не обновился после смены региона"
+    assert target_url_part in driver.current_url, f"URL не содержит {target_url_part}"
+    assert target_region in driver.title, "Title не содержит название нового региона"

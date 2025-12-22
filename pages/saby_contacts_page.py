@@ -3,61 +3,50 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 class SabyContactsPage:
-    # Локаторы
     TENSOR_BANNER = (By.XPATH, "//img[contains(@alt,'Тензор')]/ancestor::a")
-    REGION_CHOOSER = (By.CSS_SELECTOR, "span.sbis_ru-Region-Chooser__text")
-    REGION_LIST = (By.CSS_SELECTOR, "div.sbis_ru-Region-Chooser__dropdown li")
-    PARTNERS_LIST = (By.CSS_SELECTOR, "div.sbis_ru-Partners__list-item")
+    REGION_TEXT = (By.XPATH, "//span[contains(@class,'sbis_ru-Region-Chooser') and contains(@class, 'ml-16')]")
+    REGION_PANEL = (By.CSS_SELECTOR, "div.sbis_ru-Region-Panel")
+    PARTNER_NAMES = (By.CSS_SELECTOR, "div.sbisru-Contacts-List__name[itemprop='name']")
 
     def __init__(self, driver):
         self.driver = driver
         self.wait = WebDriverWait(driver, 20)
 
-    def click_tensor_banner(self):
-        # ждём, что страница контактов загрузилась
+    # вспомогательные методы
+    def _scroll_to(self, element):
+        self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
+
+    def wait_page_loaded(self):
         self.wait.until(lambda d: "contacts" in d.current_url)
-        # прокрутка вниз
-        self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        self.wait.until(lambda d: d.execute_script("return document.readyState") == "complete")
+
+    # действия
+    def click_tensor_banner(self):
+        self.wait_page_loaded()
         banner = self.wait.until(EC.presence_of_element_located(self.TENSOR_BANNER))
-        # доводим элемент в видимую область
-        self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", banner)
-        self.wait.until(EC.element_to_be_clickable(self.TENSOR_BANNER))
-        banner.click()
+        self._scroll_to(banner)
+        self.wait.until(EC.element_to_be_clickable(self.TENSOR_BANNER)).click()
 
-    def wait_region_is_loaded(self):
-        region_el = self.wait.until(lambda d: d.find_element(*self.REGION_CHOOSER))
-        self.wait.until(lambda d: region_el.text.strip() != "")
-        return region_el.text.strip()
+    def open_region_selector(self):
+        self.wait_page_loaded()
+        self.wait.until(EC.element_to_be_clickable(self.REGION_TEXT)).click()
+        self.wait.until(EC.visibility_of_element_located(self.REGION_PANEL))
 
-    def region_should_be(self, expected_region: str):
-        self.wait_region_is_loaded()
-        actual_region = self.wait_region_is_loaded()
-        assert "Башкортостан" in actual_region, f"Ожидался регион 'Башкортостан', но найден '{actual_region}'"
-        # Проверка через title на случай, если JS динамически изменил страницу
-        assert expected_region in self.driver.title, f"Регион '{expected_region}' не найден в заголовке страницы"
+    def select_region(self, region_name: str):
+        # локатор для любого региона
+        region_locator = (By.XPATH, f"//span[@title='{region_name}']")
+        self.wait.until(EC.element_to_be_clickable(region_locator)).click()
 
-    def partners_should_be_present(self):
-        partners = self.wait.until(EC.presence_of_all_elements_located(self.PARTNERS_LIST))
-        assert len(partners) > 0, "Список партнеров пустой"
+    # получение данных
+    def get_current_region(self) -> str:
+        return self.wait.until(EC.visibility_of_element_located(self.REGION_TEXT)).text
 
-    def get_partners_names(self):
-        partners = self.wait.until(EC.presence_of_all_elements_located(self.PARTNERS_LIST))
-        return [p.text.strip() for p in partners]
+    def get_partners_list(self) -> list:
+        self.wait_page_loaded()
+        # ждем появления хотя бы одного партнера
+        self.wait.until(lambda d: len(d.find_elements(*self.PARTNER_NAMES)) > 0)
+        elements = self.driver.find_elements(*self.PARTNER_NAMES)
+        return [el.text.strip() for el in elements if el.text.strip()]
 
-    def change_region(self, region_name: str):
-        region_chooser = self.wait.until(EC.element_to_be_clickable(self.REGION_CHOOSER))
-        region_chooser.click()
-        regions = self.wait.until(EC.presence_of_all_elements_located(self.REGION_LIST))
-        found = False
-        for region in regions:
-            if region_name in region.text:
-                self.driver.execute_script("arguments[0].scrollIntoView({block:'center'});", region)
-                region.click()
-                found = True
-                break
-        assert found, f"Регион '{region_name}' не найден в списке"
-
-    def check_url_and_title_contains_region(self, region_name: str):
-        self.wait.until(lambda d: "02 Башкортостан" in d.page_source)
-        assert region_name in self.driver.title or region_name in self.driver.current_url, \
-            f"URL или заголовок не содержат регион '{region_name}'"
+    def wait_region_changed_to(self, region_name: str):
+        self.wait.until(EC.text_to_be_present_in_element(self.REGION_TEXT, region_name))

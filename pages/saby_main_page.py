@@ -15,9 +15,19 @@ class SabyMainPage:
         self.driver.get("https://saby.ru")
 
     def open_contacts_region(self):
-        contacts = self.wait.until(EC.visibility_of_element_located(self.CONTACTS_MENU))
+        contacts = self.wait.until(
+            EC.visibility_of_element_located(self.CONTACTS_MENU)
+        )
         ActionChains(self.driver).move_to_element(contacts).perform()
-        more_offices = self.wait.until(EC.element_to_be_clickable(self.MORE_OFFICES))
+
+        more_offices = self.wait.until(
+            EC.element_to_be_clickable(self.MORE_OFFICES)
+        )
         more_offices.click()
 
-        
+        # ждём, пока загрузится страница контактов
+        self.wait.until(
+            EC.presence_of_element_located(
+                (By.CSS_SELECTOR, "div.sbisru-Contacts-List__item")
+            )
+        )
